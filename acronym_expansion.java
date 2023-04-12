@@ -30,21 +30,17 @@ public class acronym_expansion {
 		
 		acronym_expansion stopWatch = new acronym_expansion();
 		
-		
-		
 		HashMap<String,String> map = new HashMap<>();
 		//process of reading the csv file
-		FileReader fr = new FileReader("/Users/21choit/eclipse-workspace/acronym/src/acronym/slang.csv"); 
+		FileReader fr = new FileReader("./slang.csv"); 
 		BufferedReader input = new BufferedReader(fr);
 		
 		String acronymCell, expansionCell;
 		String row;
 		
-		
 		int i = 0;
 		//iterate through each cells in the csv file and store the acronym and expansion in hashmap
       	
-		
 		while((row = input.readLine()) != null) {
 			
 			if (i > 0) {
@@ -61,12 +57,10 @@ public class acronym_expansion {
 			i++;
 		}
 		
-		
-		
 		//----------------------------------------------------------------------------------------------------------------------------------------	
 		
-		//File folder = new File("/Users/21choit/eclipse-workspace/acronym/src/acronym/2.8M App Reviews - 3686 Top Paid Apps - 998.8MB on Disk");
-		File folder = new File("/Users/21choit/eclipse-workspace/acronym/src/acronym/demo");
+		String datasetPath = "./dataset"; // Please put dataset files into this directory
+		File folder = new File(datasetPath);
 		File[] files = folder.listFiles();
 		ArrayList<String> filePaths = new ArrayList<String>();
 		ArrayList<String> contentList = new ArrayList<String>();
@@ -80,8 +74,7 @@ public class acronym_expansion {
 		}
 		
 		for(String fileName:filePaths) {
-			//fr = new FileReader ("/Users/21choit/eclipse-workspace/acronym/src/acronym/2.8M App Reviews - 3686 Top Paid Apps - 998.8MB on Disk/" + fileName);
-		    fr = new FileReader("/Users/21choit/eclipse-workspace/acronym/src/acronym/demo/" + fileName);
+		    fr = new FileReader(datasetPath + "/" + fileName);
 		    input = new BufferedReader(fr);
 		
 		//iterate through each cells in the csv file and store the content section into the arraylist
@@ -96,11 +89,8 @@ public class acronym_expansion {
 		    }
 		}
 		
-		
-		
 		String[] splitText = null;
 		String newText = "";
-		
 		
 		ArrayList<Long> timeList = new ArrayList<Long>();
 		
@@ -113,8 +103,6 @@ public class acronym_expansion {
 		        String lowercaseWord = originalWord.toLowerCase();
 		        
 				//Check if the word is same in the key from the hashmap. If true, replace with the long-form from the value of the hashmap.
-		        
-		        
 		        if(map.containsKey(lowercaseWord)) {
 		            String longForm = map.get(lowercaseWord);
 		            

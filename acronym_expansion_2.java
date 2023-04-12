@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import java.util.HashMap;
+import java.util.Map;
 
 public class acronym_expansion_2 {
 	
@@ -24,19 +26,16 @@ public class acronym_expansion_2 {
 		return endTime-startTime;
 	}
 	
-	
-	
 	public static void main (String[] args) throws IOException {
 		AcronymExpander expander = new AcronymExpander();
 		acronym_expansion_2 stopWatch = new acronym_expansion_2();
 		
 		//process of reading the csv file
-		FileReader fr = new FileReader("/Users/21choit/eclipse-workspace/acronym/src/acronym/slang.csv"); 
+		FileReader fr = new FileReader("./slang.csv"); 
 		BufferedReader input = new BufferedReader(fr);
 		
 		String acronymCell, expansionCell;
 		String row;
-		
 		
 		int i = 0;
 		//iterate through each cells in the csv file and store the acronym and expansion in hashmap
@@ -59,14 +58,14 @@ public class acronym_expansion_2 {
 			
 		}
 		
-		//File folder = new File("/Users/21choit/eclipse-workspace/acronym/src/acronym/2.8M App Reviews - 3686 Top Paid Apps - 998.8MB on Disk");
-		File folder = new File("/Users/21choit/eclipse-workspace/acronym/src/acronym/demo");
+		
+		String datasetPath = "./dataset"; // Please put dataset files into this directory
+		File folder = new File(datasetPath);
 		File[] files = folder.listFiles();
 		ArrayList<String> filePaths = new ArrayList<String>();
 		ArrayList<String> contentList = new ArrayList<String>();
 
 		//iterate through each file in the dataset folder and get all of the files' name
-		
 		for (File file : files) {
 			if (file.isFile()) {
 				filePaths.add(file.getName());
@@ -74,8 +73,7 @@ public class acronym_expansion_2 {
 		}
 		
 		for(String fileName:filePaths) {
-			//fr = new FileReader ("/Users/21choit/eclipse-workspace/acronym/src/acronym/2.8M App Reviews - 3686 Top Paid Apps - 998.8MB on Disk/" + fileName);
-		    fr = new FileReader("/Users/21choit/eclipse-workspace/acronym/src/acronym/demo/" + fileName);
+		    fr = new FileReader(datasetPath + "/" + fileName);
 		    input = new BufferedReader(fr);
 		
 		//iterate through each cells in the csv file and store the content section into the arraylist
@@ -111,4 +109,98 @@ public class acronym_expansion_2 {
 		
 	}
 
+}
+
+class TrieNode {
+    Map<Character, TrieNode> children;
+    String expandedForm;
+
+    TrieNode() {
+        children = new HashMap<>();
+        expandedForm = null;
+    }
+}
+
+class AcronymExpander {
+    TrieNode root;
+
+    AcronymExpander() {
+        root = new TrieNode();
+    }
+
+    void insert(String acronym, String expandedForm) {
+        TrieNode node = root;
+
+        for (char c : acronym.toCharArray()) {
+            node.children.putIfAbsent(c, new TrieNode());
+            node = node.children.get(c);
+        }
+        node.expandedForm = expandedForm;
+    }
+
+	/*
+	 * Expands acronyms from a given input String text using a Trie of acronyms and their expanded forms
+	 * 
+	 * @param text The input String to expand
+	 * @return The text with acronyms expanded to their full forms
+	 * 
+	 * The method iterates through the input text and searches for acronyms in the Trie built by the csv file
+	 * Word boundaries are checked for before and after each word/potential acronym to ensure that only standalone acronyms are expanded
+	 * If the word found between each word boundary is a valid acronym that exists in the Trie, the expanded form of the acronym is appended to the output String
+	 * If not, the original word is appended to the output String
+	 * 
+	 */
+    String expand(String text) {
+        StringBuilder expandedText = new StringBuilder();
+        int i = 0;
+
+        while (i < text.length()) {
+            TrieNode node = root;
+            TrieNode altNode = root;
+            int j = i;
+            boolean altNodeActive = true;
+
+            while (j < text.length() && (node.children.containsKey(Character.toLowerCase(text.charAt(j))) || (altNodeActive && altNode.children.containsKey(Character.toUpperCase(text.charAt(j)))))) {
+                if (node.children.containsKey(Character.toLowerCase(text.charAt(j)))) {
+                    node = node.children.get(Character.toLowerCase(text.charAt(j)));
+                } else {
+                    altNodeActive = false;
+                }
+
+                if (altNodeActive && altNode.children.containsKey(Character.toUpperCase(text.charAt(j)))) {
+                    altNode = altNode.children.get(Character.toUpperCase(text.charAt(j)));
+                } else {
+                    altNodeActive = false;
+                }
+
+                j++;
+            }
+
+            boolean isWordBoundaryBefore = i == 0 || !Character.isLetter(text.charAt(i - 1));
+            boolean isWordBoundaryAfter = j == text.length() || !Character.isLetter(text.charAt(j));
+
+            if (isWordBoundaryBefore && isWordBoundaryAfter && node.expandedForm != null) {
+                if (i == 0) {
+                    expandedText.append(Character.toUpperCase(node.expandedForm.charAt(0)));
+                    expandedText.append(node.expandedForm.substring(1));
+                } else {
+                    expandedText.append(node.expandedForm);
+                }
+                i = j;
+            } else if (isWordBoundaryBefore && isWordBoundaryAfter && altNodeActive && altNode.expandedForm != null) {
+                if (i == 0) {
+                    expandedText.append(Character.toUpperCase(altNode.expandedForm.charAt(0)));
+                    expandedText.append(altNode.expandedForm.substring(1));
+                } else {
+                    expandedText.append(altNode.expandedForm);
+                }
+                i = j;
+            } else {
+                expandedText.append(text.charAt(i));
+                i++;
+            }
+        }
+
+        return expandedText.toString();
+    }
 }
